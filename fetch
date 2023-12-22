@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+for url in $(cat ./data/index.html | xq -n -q '.name > a[href^="p"]' -a 'href');
+do
+  path="./data/$url.html"
+  if [ ! -f "$path" ]; then
+    echo "Fetching $url"
+    curl "https://nownownow.com/$url" --create-dirs -o "$path"
+    sleep 0.3
+  else
+    echo "Skipping $url"
+  fi
+done;
