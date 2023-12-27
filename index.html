@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NowNowNow JSON</title>
+    <meta name="description" content="Search through NowNowNow data" />
+    <link
+      href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      html,
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+          "Segoe UI Symbol";
+      }
+
+      .gridjs-head {
+        display: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <input
+      id="custom-search"
+      placeholder="Search"
+      type="search"
+      style="
+        display: block;
+        width: 100%;
+        padding: 0.5em;
+        margin-bottom: 0.5em;
+        font-size: 1.5em;
+        border: 1px solid #e5e7eb;
+        -moz-appearance: none;
+        -webkit-appearance: none;
+        appearance: none;
+      "
+      autocomplete="off"
+    />
+
+    <div id="output"></div>
+
+    <script type="module">
+      import { Grid, html } from "https://unpkg.com/gridjs?module";
+
+      const grid = new Grid({
+        columns: [
+          {
+            name: "Name",
+            formatter: (cell, row) =>
+              html(`<a href="${row.cells[1].data}">${cell}</a>`),
+          },
+          {
+            name: "URL",
+            hidden: true,
+          },
+          "Location",
+          { id: "title", name: "Professional title" },
+          { id: "what", name: "What do you do?" },
+          { id: "why", name: "Why?" },
+          { id: "read", name: "What should we read?" },
+        ],
+        data: () =>
+          fetch(
+            "https://raw.githubusercontent.com/agentcooper/nownownow-json/main/data.json"
+          ).then((res) => res.json()),
+        search: true,
+        sort: true,
+        fixedHeader: true,
+        height: "calc(100vh - 100px)",
+      });
+
+      grid.render(document.getElementById("output"));
+
+      function debounce(func, timeout = 300) {
+        let timer;
+        return (...args) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => {
+            func.apply(this, args);
+          }, timeout);
+        };
+      }
+
+      // custom search, as the one in GridJS lags too much
+      const originalSearchNode = document.querySelector(".gridjs-search-input");
+      document.getElementById("custom-search").addEventListener(
+        "input",
+        debounce((event) => {
+          originalSearchNode.value = event.target.value;
+          originalSearchNode.dispatchEvent(new Event("input"));
+        }, 200)
+      );
+    </script>
+  </body>
+</html>
